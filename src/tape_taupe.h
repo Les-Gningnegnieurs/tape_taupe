@@ -14,6 +14,15 @@
 #define Taupe_3_pin 4
 #define Taupe_4_pin 5
 
+#define outpin_switch_taupe_1 22 
+#define outpin_switch_taupe_2 24
+#define outpin_switch_taupe_3 26
+#define outpin_switch_taupe_4 28
+#define inpin_switch_taupe_1 23
+#define inpin_switch_taupe_2 25
+#define inpin_switch_taupe_3 27
+#define inpin_switch_taupe_4 29
+
 /*******************************************************************************************************/
 
 
@@ -30,3 +39,6 @@ int actionneur_taupes();
 
 /*Definit le mode de fonctionnement des pines aux quelles sont liees les taupes comme etant en mode OUTPUT.*/
 void mode_pin_taupes();
+
+/*Definit le mode de fonctionnement des pines aux quelles sont liees les switches des tetes des taupes comme etant en mode OUTPUT ou INPUT.*/
+void mode_pin_switches_taupes();

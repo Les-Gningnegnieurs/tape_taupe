@@ -5,6 +5,7 @@
 void setup() {
   // put your setup code here, to run once:
   mode_pin_taupes();
+  mode_pin_switches_taupes();
   BoardInit();
 
 }
