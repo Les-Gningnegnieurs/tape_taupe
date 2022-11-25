@@ -37,6 +37,11 @@
 #define outpin_switch_pause 32 
 #define inpin_switch_pause 33
 
+#define outpin_switch_choix_G 34
+#define outpin_select_choix 34
+#define inpin_switch_choix_G 35
+#define inpin_select_choix 36
+
 /*Display 
 const int rs = 12, en = 11, d4 = 5, d5 = 4, d6 = 3, d7 = 2;
 LiquidCrystal lcd(rs, en, d4, d5, d6, d7);*/
@@ -50,8 +55,9 @@ struct Pointage
     int points_humain = 0;
 }typedef Pointage;
 
-
-
+extern bool menu;
+extern bool start;
+extern int mode_de_jeu;
 
 /*******************************************************************************************************
  *
@@ -118,7 +124,7 @@ void changement_de_joueur();
 
 void pause_changement_jouer();
 
-void Fonction_pause();
+//void Fonction_pause();
 /*******************************************************************************************************
  * 
  * SECTION DISPLAY
@@ -132,3 +138,13 @@ void affichage_pointage();
 void scroll_ordre_debut();
 
 void debut_partie();
+
+void Menu();
+
+void retour_menu();
+
+void choix_Bouton_etat();
+
+void Choix_mode_jeu();
+
+void Select();

@@ -149,6 +149,10 @@ void mode_pin_taupes()
     pinMode(LED_PROBLEME, OUTPUT);
     pinMode(outpin_switch_pause,OUTPUT);
     pinMode(inpin_switch_pause,INPUT_PULLUP);
+    pinMode(outpin_switch_choix_G,OUTPUT);
+    pinMode(outpin_select_choix,OUTPUT);
+    pinMode(inpin_switch_choix_G ,INPUT_PULLUP);
+    pinMode(inpin_select_choix,INPUT_PULLUP);
 }
 
 void mode_pin_switches_taupes()
@@ -176,6 +180,7 @@ void ChangerTaupe(){
     {
         ChangerTaupe();
     }
+    Serial.print(taupe_choisie);
     
 }
 
@@ -527,7 +532,7 @@ void changement_de_joueur()
         {
             pause_changement_jouer();
         }
-        temps_changement_joueur = temps_actuel_durant_changement + temps_de_jeu_par_joueur;
+        temps_changement_joueur = temps_actuel_durant_changement + temps_de_jeu_par_joueur; 
         Serial.print("\ntemps_actuel_durant_changement : ");
         Serial.print(temps_actuel_durant_changement);
         Serial.print("\n");
@@ -563,8 +568,8 @@ void pause_changement_jouer()
     affichage_pointage();
 }
 
-int l;
-void Fonction_pause()
+/*int l;
+void Fonction_pause() //inpin volee pour star switch. a refaire***
 {
     if (digitalRead(inpin_switch_pause) == HIGH)
     {   
@@ -580,4 +585,147 @@ void Fonction_pause()
         Fonction_pause();
         
     }
+}*/
+
+
+int choix=1;
+int choix_anterieur=0;
+bool select = false;
+bool menu = true;
+bool choix_bouton_released = true;
+bool choix_bouton_pressed = false;
+
+void choix_Bouton_etat()
+{
+    //si le bouton etait relachee lors de la derniere lecture, on verifie si maintenant il est enfonce. (taupe_released et taupe_pressed = valeur booleenne)
+    if (choix_bouton_released)
+    {
+        //si il est enfonce (donc taupe_released = vrai), on definit les valeur booleennes des variables.
+        if (digitalRead(inpin_switch_choix_G) == LOW)
+        { 
+            choix_bouton_released = false; //le bouton de detection n'est pas relachee.
+            choix_bouton_pressed = true; //le bouton de detection est donc enfonce. 
+            Serial.print("bouton choix pressed");
+        }
+    }
+    //si le bouton etait enfoncee lors de la derniere lecture, on verifie si maintenant il est relachee. 
+    else if (digitalRead(inpin_switch_choix_G) == HIGH)
+    {
+        
+        choix_bouton_released = true;
+        choix_bouton_pressed = false;
+        Serial.print("\nbouton choix relachee :) ");
+        Serial.print("\n");
+    }
+    //si le bouton etait enfoncee lors de la derniere lecture et qu'il l'est encore, on le definit comme false car il s'agit du meme coup (donc on ne le compte pas deux fois). 
+    else
+    {
+        choix_bouton_pressed = false;
+    }
 }
+
+void Select()
+{
+    if (select)
+    {
+        switch (choix)
+        {
+        default:
+        case 1:
+            //lcd.clear();
+            lcd.setCursor(0,0);
+            lcd.print("partie solo");
+            lcd.setCursor(0,1);
+            //lcd.print("selectionnee");
+            mode_de_jeu = partie_solo;
+            select = false;
+            menu = false;
+            break;
+
+        case 2:
+            //lcd.clear();
+            lcd.setCursor(0,0);
+            lcd.print("multijoueurs");
+            lcd.setCursor(0,1);
+            //lcd.print("selectionnee");
+            mode_de_jeu = multijoueurs;
+            select = false;
+            menu = false;
+            break;
+        
+        }
+    }
+}
+
+
+void Choix_mode_jeu()
+{
+    if (choix_bouton_pressed)
+    {
+        lcd.clear();
+        choix++;
+        if (choix ==3)
+        {
+            choix = 1 ;
+            //options_choix();
+        }
+        //choix_bouton_pressed = false;
+        //choix_bouton_released = true;
+        Serial.print("\nchoix\n");
+        Serial.print(choix);
+        Serial.print("\n\n");
+    }
+    switch (choix)
+    {
+    default:
+    case 1:
+        lcd.setCursor(0,1);
+        lcd.print("partie solo");
+        if (digitalRead(inpin_select_choix) == LOW)
+        {
+            lcd.clear();
+            select = true;
+        }
+        break;
+
+    case 2:
+        lcd.setCursor(0,1);
+        lcd.print("multijoueur");
+        if (digitalRead(inpin_select_choix) == LOW)
+        {
+            lcd.clear();
+            select = true;
+        }
+        break;
+    }
+    //Select();
+}
+
+void retour_menu()
+{
+    lcd.clear();
+    menu = true;
+    start = false;
+}
+
+
+int k=1;
+void Menu() //a terminer
+{
+    if (k==1)
+    {
+        lcd.clear();
+        k++;
+    }
+    lcd.setCursor(0,0);
+    lcd.print("Menu: ");
+
+    Choix_mode_jeu();
+    Select();
+}
+
+void Choix()
+{
+
+}
+
