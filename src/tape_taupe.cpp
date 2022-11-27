@@ -23,7 +23,7 @@ int joueur_actuel = robot;
 unsigned long temps_actuel = 0 ;
 unsigned long temps_attente = 0 ;
 const unsigned long temps_dactivation = 2000;
-const unsigned long temps_verification = 750;
+const unsigned long temps_verification = 250;
 unsigned long temps_attente_de_verification = 0;
 unsigned long temps_actuel_pour_verification = 0 ;
 
@@ -48,16 +48,19 @@ Pointage participants;
 int j=0; // valeur pour modulo choisisant joueur actif.
 unsigned long temps_changement_joueur = 0;
 unsigned long temps_actuel_durant_changement = 0;
-const unsigned long temps_de_jeu_par_joueur = 60000; //chaque joueur fait une partie de 1 min et celui avec le meilleur score final gagne.
+const unsigned long temps_de_jeu_par_joueur = 30000; //chaque joueur fait une partie de 1 min et celui avec le meilleur score final gagne.
 bool pause = false;
-
+bool Fin_de_partie = false;
+unsigned long temps_affichage_de_temps_restant = 0;
+unsigned long temps_restant  = 0;
+const unsigned long temps_affichage_seconde = 1000;
+unsigned long temps_restant_en_secondes = temps_de_jeu_par_joueur;
 
 
 
 const int rs = 3, en = 2, d0 = 4, d1 = 5, d2 = 6, d3 = 7, d4 = 8, d5 = 9, d6 = 10, d7 = 11;
 LiquidCrystal lcd(rs, en, d0, d1, d2, d3, d4, d5, d6, d7);
-int n=0;
-
+int h=0, H=0, v=0, V=0, n=0;
 
 /*******************************************************************************************************
  * 
@@ -93,6 +96,76 @@ void scroll_ordre_debut()
     }
 }
 
+
+void affichage_changement_joueur()
+{
+    if (v==0)
+    {
+        lcd.clear();
+    }
+    lcd.setCursor(0,0);
+    lcd.print("changement joueur");
+    if (v<37)
+    {
+        lcd.scrollDisplayLeft();
+        lcd.setCursor(0,1);
+        lcd.print("appuyer sur ENTER pour continuer");
+        v++;
+    }
+    else
+    {
+        v=0;
+    }
+}
+
+
+void affichage_Fin_de_Partie()
+{
+    if (h==0)
+    {
+        lcd.clear();
+        h++;
+    }
+    lcd.setCursor(0,0);
+    lcd.print("FIN DE LA PARTIE");
+    temps_fin = millis();
+    temps_attente_fin = temps_fin + temps_entree_affichage_fin;
+}
+
+void affichage_score_final()
+{
+
+    int score_final_humain = participants.points_humain;
+    int score_final_robot = participants.points_robot;
+
+    if (H==0)
+    {
+        lcd.clear();
+        H++;
+    }
+    lcd.setCursor(0,0);
+    lcd.print("Robot: ");
+    lcd.print(score_final_robot);
+    lcd.setCursor(0,1);
+    lcd.print("Humain: ");
+    lcd.print(score_final_humain);
+}
+
+void decompte_temps_restant()
+{   
+    if (V==0)
+    {
+        lcd.clear();
+        V++;
+    }
+    if (temps_actuel_durant_changement >= temps_affichage_de_temps_restant)
+    {
+        temps_restant = temps_changement_joueur - temps_actuel_durant_changement;
+
+        temps_restant_en_secondes = ((temps_restant)/1000);
+    }
+}
+
 void debut_partie()
 {
     lcd.clear();
@@ -105,20 +178,25 @@ void affichage_pointage()
 {
     int pointage_actuel_humain = participants.points_humain;
     int pointage_actuel_robot = participants.points_robot;
-    
+    decompte_temps_restant();
     lcd.clear();
     if (joueur_actuel == humain)
     {
         lcd.setCursor(0,0);
         lcd.print("Humain:");
         lcd.print(pointage_actuel_humain);
-
+        lcd.setCursor(0,1);
+        lcd.print("Temps: ");
+        lcd.print(temps_restant_en_secondes);
     }
     if (joueur_actuel == robot)
     {
         lcd.setCursor(0,0);
         lcd.print("Points Robot:");
         lcd.print(pointage_actuel_robot);
+        lcd.setCursor(0,1);
+        lcd.print("Temps: ");
+        lcd.print(temps_restant_en_secondes);
     }
 }
 
@@ -307,7 +385,7 @@ void boutons_coinces()
 {
     etat_ancienne_taupe();
     identification_des_taupes_pour_boutons_coinces();
-    if ((!ancienne_taupe_up) && (temps_actuel >= temps_attente_de_verification))
+    if (/*(!ancienne_taupe_up) &&*/ (temps_actuel >= temps_attente_de_verification))
     {
         if ((digitalRead(Get_Taupe_Bouton_INPIN(ancienne_taupe)) == 1) && (digitalRead(Get_Taupe_Bouton_INPIN(taupe_restante_a)) == 1) && (digitalRead(Get_Taupe_Bouton_INPIN(taupe_restante_b)) == 1))
         {
@@ -398,22 +476,22 @@ void compteur_de_points()
             {
                 lcd.clear();
                 participants.points_robot++;
-                affichage_pointage();
-                Serial.print("\n\t\tpointage robot\n: ");
+                //affichage_pointage();
+                /*Serial.print("\n\t\tpointage robot\n: ");
                 Serial.print("\t\t\t");
                 Serial.print(participants.points_robot);
-                Serial.print("\t\t\t\n");
+                Serial.print("\t\t\t\n");*/
                 coup_sur_taupe = false;
             }
             else 
             {
                 lcd.clear();
                 participants.points_humain++;
-                affichage_pointage();
-                Serial.print("\n\t\tpointage humain: ");
+                //affichage_pointage();
+                /*Serial.print("\n\t\tpointage humain: ");
                 Serial.print("\t\t\t");
                 Serial.print(participants.points_humain);
-                Serial.print("\t\t\t\n");
+                Serial.print("\t\t\t\n");*/
                 coup_sur_taupe = false;
             }
         }
@@ -426,11 +504,11 @@ void compteur_de_points()
             {
                 lcd.clear();
                 participants.points_robot++;
-                affichage_pointage();
-                Serial.print("\n\t\tpointage robot\n: ");
+                //affichage_pointage();
+                /*Serial.print("\n\t\tpointage robot\n: ");
                 Serial.print("\t\t\t");
                 Serial.print(participants.points_robot);
-                Serial.print("\t\t\t\n");
+                Serial.print("\t\t\t\n");*/
                 coup_sur_taupe = false;
             }
         }
@@ -508,6 +586,11 @@ void actionneur_taupes()
  * SECTION FONCTIONNEMENT DU JEU
  * 
  * *****************************************************************************************************/
+void fin_de_partie()
+{
+    Fin_de_partie = true;
+    start = false;
+}
 
 void selection_du_joueur()
 {
@@ -525,47 +608,41 @@ void changement_de_joueur()
 {
     temps_actuel_durant_changement = millis();
     
-    
     if (temps_actuel_durant_changement >= temps_changement_joueur)
     {
-        if (j>0)
+        temps_changement_joueur = temps_actuel_durant_changement + temps_de_jeu_par_joueur;
+        temps_affichage_de_temps_restant = temps_actuel_durant_changement + temps_affichage_seconde;
+        switch (j)
         {
+        case 0:
+            j++;
+            break;
+        case 1:
+            j++;
             pause_changement_jouer();
+            break;
+        case 2:
+            fin_de_partie();
+            break;
         }
-        temps_changement_joueur = temps_actuel_durant_changement + temps_de_jeu_par_joueur; 
-        Serial.print("\ntemps_actuel_durant_changement : ");
-        Serial.print(temps_actuel_durant_changement);
-        Serial.print("\n");
-        Serial.print("\ntemps_changement_joueur : ");
-        Serial.print(temps_changement_joueur);
-        Serial.print("\n");
-        j++;
-        selection_du_joueur();
-        Serial.print("\nJoueur_actuel : ");
-        Serial.print(joueur_actuel);
-        Serial.print("\n");
-        //pause_changement_jouer();
     }
 }
 
-/*void temps_pour_changement_joueur()//a enlever
-{
-    temps_actuel_durant_changement = millis();
-    temps_changement_joueur = temps_actuel_durant_changement + temps_de_jeu_par_joueur;
-}*/
 
+int b = 0;
 void pause_changement_jouer()
 {
     Serial.print("\nChangement de joueur, la partie reprend dans 30 secondes");
-    lcd.clear();
-    lcd.setCursor(0,0);
-    lcd.print("Changement joeur");
-    lcd.setCursor(0,1);
-    lcd.print("Attendre 30s");
+   
+    //lcd.clear();
+    //b++;
+    
+    //affichage_changement_joueur();
     digitalWrite(GetTaupeOUTPin(taupe_choisie), LOW);
-    delay(30000);
+    pause = true;
+    //delay(30000);
     temps_actuel_durant_changement = millis();
-    affichage_pointage();
+    //affichage_pointage();
 }
 
 /*int l;
@@ -706,6 +783,7 @@ void retour_menu()
     lcd.clear();
     menu = true;
     start = false;
+    Reinitialisation_jeu();
 }
 
 
@@ -724,8 +802,46 @@ void Menu() //a terminer
     Select();
 }
 
-void Choix()
+void Reinitialisation_jeu()
 {
-
+    digitalWrite(GetTaupeOUTPin(taupe_choisie), LOW);
+    ChangerTaupe();
+    temps_anterieur = 0;
+    //taupe_choisie = 0;
+    taupe_bouton_pressed = false;
+    taupe_bouton_released = true;
+    coup_sur_taupe = false;
+    taupe_up = false; //detecteur d'etat de la taupe (Montee ou Baissee)
+    //ancienne_taupe = 4; //valeur fictive pour pas que lors du demarrage le code lise une bouton coince
+    ancienne_taupe_up = true; 
+    //********
+    mode_de_jeu = multijoueurs;/*******a definir dans les choix au display*******/
+    //********
+    joueur_actuel = robot;
+    temps_actuel = 0 ;
+    temps_attente = 0 ;
+    temps_attente_de_verification = 0;
+    temps_actuel_pour_verification = 0 ;
+    bouton_coince = false;
+    LED_PROB_ON = false;
+    j=0; // valeur pour modulo choisisant joueur actif.
+    temps_changement_joueur = 0;
+    temps_actuel_durant_changement = 0;
+    pause = false;
+    Fin_de_partie = false;
+    temps_affichage_de_temps_restant = 0;
+    temps_restant  = 0;
+    temps_restant_en_secondes = temps_de_jeu_par_joueur;
+    h=0, H=0, v=0, V=0, n=0;
+    start = false;
+    temps_start=0;
+    temps_attente_start=0;
+    temps_scroll = 0;
+    temps_attente_scroll = 0;
+    temps_fin = 0;
+    temps_attente_fin = 0;
+    i=0;
+    participants.points_humain=0;
+    participants.points_robot=0;
 }
 

@@ -58,7 +58,30 @@ struct Pointage
 extern bool menu;
 extern bool start;
 extern int mode_de_jeu;
+extern bool pause;
+extern LiquidCrystal lcd;
+extern unsigned long temps_changement_joueur;
+extern unsigned long temps_actuel_durant_changement;
+extern const unsigned long temps_de_jeu_par_joueur;
+extern bool Fin_de_partie;
+extern unsigned long temps_fin;
+extern unsigned long temps_attente_fin;
+extern const unsigned long temps_entree_affichage_fin;
+extern unsigned long temps_affichage_de_temps_restant;
+extern unsigned long temps_restant;
+extern const unsigned long temps_affichage_seconde;
+extern unsigned long temps_restant_en_secondes;
 
+extern unsigned long temps_start;
+extern unsigned long temps_attente_start;
+extern const unsigned int temps_delay_start;
+extern unsigned long temps_scroll;
+extern unsigned long temps_attente_scroll;
+extern const unsigned long temps_entree_scroll;
+extern unsigned long temps_fin;
+extern unsigned long temps_attente_fin;
+extern const unsigned long temps_entree_affichage_fin;
+extern int i;
 /*******************************************************************************************************
  *
  * SECTION COMMANDES TAUPES ET POINTS
@@ -117,6 +140,7 @@ void actionneur_taupes();
 //si j modulo 2 donne 0 (donc si j est paire alors quand on le divise par 2 il n'y a pas de restes) alors c'est le tour du joueur humain de jouer.
 void selection_du_joueur();
 
+void fin_de_partie();
 
 void changement_de_joueur();
 
@@ -124,12 +148,17 @@ void changement_de_joueur();
 
 void pause_changement_jouer();
 
+void Reinitialisation_jeu();
+
 //void Fonction_pause();
 /*******************************************************************************************************
  * 
  * SECTION DISPLAY
  * 
  * *****************************************************************************************************/
+void affichage_Fin_de_Partie();
+
+void affichage_score_final();
 
 void initialisation_ecran();
 
@@ -148,3 +177,5 @@ void choix_Bouton_etat();
 void Choix_mode_jeu();
 
 void Select();
+
+void affichage_changement_joueur();
