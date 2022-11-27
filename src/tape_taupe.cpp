@@ -588,6 +588,7 @@ void actionneur_taupes()
  * *****************************************************************************************************/
 void fin_de_partie()
 {
+    digitalWrite(GetTaupeOUTPin(taupe_choisie), LOW);
     Fin_de_partie = true;
     start = false;
 }
