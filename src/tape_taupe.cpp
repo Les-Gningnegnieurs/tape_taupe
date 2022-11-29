@@ -1,5 +1,7 @@
 #include "tape_taupe.h"
 #include <LiquidCrystal.h>
+#include <Servo.h>
+
 
 /*******************************************************************************************************
  *
@@ -35,8 +37,10 @@ int taupe_restante_c;
 /*Definit le nom de la structure dans laquelle on compte les points*/
 Pointage participants;
 
-
-
+Servo STaupe1;
+Servo STaupe2;
+Servo STaupe3;
+Servo STaupe4;
 
 
 /*******************************************************************************************************
@@ -61,6 +65,50 @@ unsigned long temps_restant_en_secondes = temps_de_jeu_par_joueur;
 const int rs = 3, en = 2, d0 = 4, d1 = 5, d2 = 6, d3 = 7, d4 = 8, d5 = 9, d6 = 10, d7 = 11;
 LiquidCrystal lcd(rs, en, d0, d1, d2, d3, d4, d5, d6, d7);
 int h=0, H=0, v=0, V=0, n=0;
+
+
+/*******************************************************************************************************
+ * 
+ * SECTION SERVO
+ *  
+ * *****************************************************************************************************/
+
+void setupServoTaupes(){
+    STaupe1.attach(ServoPinTaupe1);
+    STaupe2.attach(ServoPinTaupe2);
+    STaupe3.attach(ServoPinTaupe3);
+    STaupe4.attach(ServoPinTaupe4);
+}
+
+Servo GetTaupeServo(int taupeIdx){
+    switch (taupeIdx)
+    {
+    case 0:
+        return STaupe1;
+        break;
+    case 1:
+        return STaupe2;
+        break;
+    case 2:
+        return STaupe3;
+        break;
+    case 3:
+        return STaupe4;
+        break;
+    }
+}
+
+void MoveServo(int deg, int idx){
+    GetTaupeServo(idx).write(deg);
+}
+
+void RaiseTaupe(int idx){
+    MoveServo(idx, 180);
+}
+
+void LowerTaupe(int idx){
+    MoveServo(idx, 0);
+}
 
 /*******************************************************************************************************
  * 

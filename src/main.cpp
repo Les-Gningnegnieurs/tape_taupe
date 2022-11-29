@@ -22,6 +22,7 @@ void setup() {
   Serial.begin(9600);
   mode_pin_taupes();
   mode_pin_switches_taupes();
+  setupServoTaupes();
   ChangerTaupe();
   start = false;
   Serial.print("Bonjour\n");

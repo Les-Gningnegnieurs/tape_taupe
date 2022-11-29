@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <LiquidCrystal.h>
+#include <Servo.h>
 //#include <LibRobus.h>
 //#include <Wire.h>
 //#include <Adafruit_TCS34725.h>
@@ -41,6 +42,14 @@
 #define outpin_select_choix 34
 #define inpin_switch_choix_G 35
 #define inpin_select_choix 36
+
+
+//************ A CHANGER SELON LE CIRCUIT ***********
+//Servo
+#define ServoPinTaupe1 1
+#define ServoPinTaupe2 2
+#define ServoPinTaupe3 3
+#define ServoPinTaupe4 4
 
 /*Display 
 const int rs = 12, en = 11, d4 = 5, d5 = 4, d6 = 3, d7 = 2;
@@ -179,3 +188,18 @@ void Choix_mode_jeu();
 void Select();
 
 void affichage_changement_joueur();
+
+/*******************************************************************************************************
+ * 
+ * SECTION Servo
+ * 
+ * *****************************************************************************************************/
+void setupServoTaupes();
+
+Servo GetTaupeServo(int taupeIdx);
+
+void MoveServo(int deg, int idx);
+
+void RaiseTaupe(int idx);
+
+void LowerTaupe(int idx);
