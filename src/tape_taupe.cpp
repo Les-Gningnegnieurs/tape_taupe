@@ -30,11 +30,11 @@ unsigned long temps_attente_de_verification = 0;
 unsigned long temps_actuel_pour_verification = 0 ;
 // a ajouter dans reset*********
 int valeur_temps_choisi;
-const unsigned long temps_taupes_robot_1 = 1000;
-const unsigned long temps_taupes_robot_2 = 1250;
-const unsigned long temps_taupes_robot_3 = 1500;
-const unsigned long temps_taupes_robot_4 = 1750;
-const unsigned long temps_taupes_robot_5 = 2000;
+const unsigned long temps_taupes_robot_1 = 750;
+const unsigned long temps_taupes_robot_2 = 1000;
+const unsigned long temps_taupes_robot_3 = 1250;
+const unsigned long temps_taupes_robot_4 = 1500;
+const unsigned long temps_taupes_robot_5 = 1750;
 
 bool bouton_coince = false;
 bool LED_PROB_ON = false;
@@ -129,8 +129,18 @@ void RaiseTaupe(int idx){
         isTaupeRaised[idx] = true;
     }
     else{
-        MoveServo(idx, 180);
-        isTaupeRaised[idx] = true;
+        if (taupe_choisie == 2)
+        {
+            MoveServo(idx, 140);
+            isTaupeRaised[idx] = true;
+        }
+        else if (taupe_choisie == 3)
+        {
+            MoveServo(idx, 180);
+            isTaupeRaised[idx] = true;
+        }
+        //MoveServo(idx, 180);
+        //isTaupeRaised[idx] = true;
     }
     //MoveServo(idx, 180);
     //isTaupeRaised[idx] = true;
@@ -163,9 +173,10 @@ void LowerTaupe(int idx){
 void initialisation_ecran()
 {
     lcd.begin(16,2);
+    lcd.clear();
     lcd.setCursor(0,0);
-    lcd.write("Bonjour");
-    lcd.setCursor(0,1);
+    //lcd.write("Bonjour");
+    //lcd.setCursor(0,1);
     //delay(3000);
     //scroll_ordre_debut();
 }
@@ -556,7 +567,14 @@ void taupe_Bouton_etat()
 
 
 bool Activation_UP_DOWN_taupes(){
-    Valeur_temps_choisi();
+    if (joueur_actuel == humain)
+    {
+        Valeur_temps_choisi();
+    }
+    else if (joueur_actuel == robot)
+    {
+        temps_dactivation = 2000;
+    }
     if (!bouton_coince)
     {
         //Si la taupe est descendue, on entre dans le "if" et on monte la taupe, on part le timer.
@@ -669,7 +687,7 @@ void actionneur_taupes()
             LowerTaupe(taupe_choisie);
             if (!LED_PROB_ON)
             {
-                Serial.print("\n\nbouton coincee!!!\n\n");
+                //Serial.print("\n\nbouton coincee!!!\n\n");
                 digitalWrite(LED_PROBLEME,HIGH);
                 LED_PROB_ON = true;
             }
@@ -697,7 +715,7 @@ void actionneur_taupes()
             LowerTaupe(taupe_choisie);
             if (!LED_PROB_ON)
             {
-                Serial.print("\n\nbouton coincee!!!\n\n");
+                //Serial.print("\n\nbouton coincee!!!\n\n");
                 digitalWrite(LED_PROBLEME,HIGH);
                 LED_PROB_ON = true;
             }
@@ -832,7 +850,7 @@ void Select()
         case 1:
             //lcd.clear();
             lcd.setCursor(0,0);
-            lcd.print("partie solo");
+            lcd.print("partie robot");
             lcd.setCursor(0,1);
             //lcd.print("selectionnee");
             mode_de_jeu = partie_solo;
@@ -878,7 +896,7 @@ void Choix_mode_jeu()
     default:
     case 1:
         lcd.setCursor(0,1);
-        lcd.print("partie solo");
+        lcd.print("partie robot");
         if (digitalRead(inpin_select_choix) == LOW)
         {
             lcd.clear();
@@ -925,6 +943,7 @@ void Menu() //a terminer
 
 void Reinitialisation_jeu()
 {
+    initialisation_ecran();
     LowerTaupe(taupe_choisie);
     isTaupeRaised[taupe_choisie]=false;
     ChangerTaupe();
@@ -975,6 +994,7 @@ void Reinitialisation_jeu()
     choix_bouton_released = true;
     choix_bouton_pressed = false;
     b = 0;
+    setupServoTaupes();
     if (LED_PROB_ON)
     {
         digitalWrite(LED_PROBLEME,LOW);
