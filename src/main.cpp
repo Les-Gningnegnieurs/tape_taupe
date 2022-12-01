@@ -1,6 +1,9 @@
 #include <LiquidCrystal.h>
 #include <Arduino.h>
 #include "tape_taupe.h"
+#include <MegaServo.h>
+
+
 bool start = false;
 
 unsigned long temps_start=0;
@@ -13,6 +16,8 @@ unsigned long temps_fin = 0;
 unsigned long temps_attente_fin = 0;
 const unsigned long temps_entree_affichage_fin = 5000;
 int i=0;
+MegaServo ST;
+
 
 //deplacer la fonction liquidcristal au cpp.
 
@@ -23,9 +28,10 @@ void setup() {
   mode_pin_taupes();
   mode_pin_switches_taupes();
   setupServoTaupes();
+  //Serial.println(ST.attach(45));
   ChangerTaupe();
   start = false;
-  Serial.print("Bonjour\n");
+  //Serial.print("Bonjour\n");
   
 }
 
@@ -51,13 +57,13 @@ void loop()
         {
           affichage_score_final();
         }
-        if (digitalRead(inpin_switch_pause) == LOW)
+        if (digitalRead(inpin_switch_menu) == LOW)
           {
               retour_menu();
           }
       }
       else{
-          if (digitalRead(inpin_switch_pause) == LOW)
+          if (digitalRead(inpin_switch_menu) == LOW)
             {
                 retour_menu();
             }
@@ -67,14 +73,16 @@ void loop()
             scroll_ordre_debut();
             temps_attente_scroll = temps_scroll + temps_entree_scroll;
           }
-          if ((digitalRead(Get_Taupe_Bouton_INPIN(0)) == 0))
+          if (digitalRead(inpin_switch_start) == 0)
           {
+
             start = true;
             temps_start = millis();
             temps_attente_start = temps_start + temps_delay_start;
             Serial.print("La partie commence");
             debut_partie();
           }
+          //Serial.print(digitalRead(inpin_switch_start));
         }
       }
         
@@ -104,7 +112,7 @@ void loop()
         
     }
     else{
-        if (digitalRead(inpin_switch_pause) == LOW)
+        if (digitalRead(inpin_switch_menu) == LOW)
           {
               retour_menu();
           }
@@ -129,7 +137,7 @@ void loop()
         }
     }
   }
-  
+
 }
   
 

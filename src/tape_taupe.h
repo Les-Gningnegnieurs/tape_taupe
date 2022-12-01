@@ -1,6 +1,6 @@
 #include <Arduino.h>
 #include <LiquidCrystal.h>
-#include <Servo.h>
+#include <MegaServo.h>
 //#include <LibRobus.h>
 //#include <Wire.h>
 //#include <Adafruit_TCS34725.h>
@@ -12,10 +12,10 @@
 //#define RAND_MAX 3
 
 //indique les pines de connexion des taupes
-#define Taupe_1_pin 25
+/*#define Taupe_1_pin 25
 #define Taupe_2_pin 24
 #define Taupe_3_pin 23
-#define Taupe_4_pin 22
+#define Taupe_4_pin 22*/
 #define LED_PROBLEME 27
 
 //indique les pines de connexion des switch de detection des coups (sur les taupes)
@@ -35,21 +35,25 @@
 #define humain 2
 
 //fonctionnement jeu
-#define outpin_switch_pause 32 
-#define inpin_switch_pause 33
-
+#define outpin_switch_menu 34 
+#define outpin_switch_start 34
 #define outpin_switch_choix_G 34
 #define outpin_select_choix 34
+
+#define inpin_switch_menu 33
 #define inpin_switch_choix_G 35
 #define inpin_select_choix 36
-
-
+#define inpin_switch_start 37
 //************ A CHANGER SELON LE CIRCUIT ***********
 //Servo
-#define ServoPinTaupe1 1
-#define ServoPinTaupe2 2
-#define ServoPinTaupe3 3
-#define ServoPinTaupe4 4
+#define ServoPinTaupe1 45
+#define ServoPinTaupe2 46
+#define ServoPinTaupe3 47
+#define ServoPinTaupe4 48
+
+
+
+
 
 /*Display 
 const int rs = 12, en = 11, d4 = 5, d5 = 4, d6 = 3, d7 = 2;
@@ -63,6 +67,7 @@ struct Pointage
     int points_robot = 0;
     int points_humain = 0;
 }typedef Pointage;
+
 
 extern bool menu;
 extern bool start;
@@ -149,6 +154,10 @@ void actionneur_taupes();
 //si j modulo 2 donne 0 (donc si j est paire alors quand on le divise par 2 il n'y a pas de restes) alors c'est le tour du joueur humain de jouer.
 void selection_du_joueur();
 
+void TempsVariable_taupes_robot();
+
+void Valeur_temps_choisi();
+
 void fin_de_partie();
 
 void changement_de_joueur();
@@ -196,7 +205,7 @@ void affichage_changement_joueur();
  * *****************************************************************************************************/
 void setupServoTaupes();
 
-Servo GetTaupeServo(int taupeIdx);
+MegaServo GetTaupeServo(int taupeIdx);
 
 void MoveServo(int deg, int idx);
 

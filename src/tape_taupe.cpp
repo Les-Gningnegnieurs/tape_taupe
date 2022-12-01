@@ -1,6 +1,6 @@
 #include "tape_taupe.h"
 #include <LiquidCrystal.h>
-#include <Servo.h>
+#include <MegaServo.h>
 
 
 /*******************************************************************************************************
@@ -24,24 +24,39 @@ int mode_de_jeu = multijoueurs;/*******a definir dans les choix au display******
 int joueur_actuel = robot;
 unsigned long temps_actuel = 0 ;
 unsigned long temps_attente = 0 ;
-const unsigned long temps_dactivation = 2000;
+unsigned long temps_dactivation = 2000;
 const unsigned long temps_verification = 250;
 unsigned long temps_attente_de_verification = 0;
 unsigned long temps_actuel_pour_verification = 0 ;
+// a ajouter dans reset*********
+int valeur_temps_choisi;
+const unsigned long temps_taupes_robot_1 = 1000;
+const unsigned long temps_taupes_robot_2 = 1250;
+const unsigned long temps_taupes_robot_3 = 1500;
+const unsigned long temps_taupes_robot_4 = 1750;
+const unsigned long temps_taupes_robot_5 = 2000;
 
 bool bouton_coince = false;
 bool LED_PROB_ON = false;
 int taupe_restante_a;
 int taupe_restante_b;
 int taupe_restante_c;
+int k=1;
+int choix=1;
+int choix_anterieur=0;
+bool select = false;
+bool menu = true;
+bool choix_bouton_released = true;
+bool choix_bouton_pressed = false;
+int b = 0;
 /*Definit le nom de la structure dans laquelle on compte les points*/
 Pointage participants;
 
-Servo STaupe1;
-Servo STaupe2;
-Servo STaupe3;
-Servo STaupe4;
-
+MegaServo STaupe1;
+MegaServo STaupe2;
+MegaServo STaupe3;
+MegaServo STaupe4;
+bool isTaupeRaised[4] = {0,0,0,0};
 
 /*******************************************************************************************************
  *
@@ -78,9 +93,14 @@ void setupServoTaupes(){
     STaupe2.attach(ServoPinTaupe2);
     STaupe3.attach(ServoPinTaupe3);
     STaupe4.attach(ServoPinTaupe4);
+    GetTaupeServo(0).write(180);
+    GetTaupeServo(1).write(180);
+    GetTaupeServo(2).write(0);
+    GetTaupeServo(3).write(0);
+
 }
 
-Servo GetTaupeServo(int taupeIdx){
+MegaServo GetTaupeServo(int taupeIdx){
     switch (taupeIdx)
     {
     case 0:
@@ -96,18 +116,39 @@ Servo GetTaupeServo(int taupeIdx){
         return STaupe4;
         break;
     }
-}
+} 
 
-void MoveServo(int deg, int idx){
+void MoveServo(int idx, int deg){
     GetTaupeServo(idx).write(deg);
 }
 
 void RaiseTaupe(int idx){
-    MoveServo(idx, 180);
+    if (taupe_choisie == 0 || taupe_choisie == 1)
+    {
+        MoveServo(idx, 0);
+        isTaupeRaised[idx] = true;
+    }
+    else{
+        MoveServo(idx, 180);
+        isTaupeRaised[idx] = true;
+    }
+    //MoveServo(idx, 180);
+    //isTaupeRaised[idx] = true;
 }
 
 void LowerTaupe(int idx){
-    MoveServo(idx, 0);
+    if (taupe_choisie == 0 || taupe_choisie == 1)
+    {
+        MoveServo(idx, 180);
+        isTaupeRaised[idx] = true;
+    }
+    else{
+        MoveServo(idx, 0);
+        isTaupeRaised[idx] = true;
+    }
+    //MoveServo(idx, 0);
+    //isTaupeRaised[idx] = false;
+
 }
 
 /*******************************************************************************************************
@@ -135,7 +176,7 @@ void scroll_ordre_debut()
     {
         lcd.setCursor(0,1);
         lcd.scrollDisplayLeft();
-        lcd.print("Pour commencer, appuyer sur la taupe 1");
+        lcd.print("Pour commencer, appuyer sur START");
         n++;
     }
     else
@@ -176,6 +217,11 @@ void affichage_Fin_de_Partie()
     }
     lcd.setCursor(0,0);
     lcd.print("FIN DE LA PARTIE");
+    if (LED_PROB_ON)
+    {
+        digitalWrite(LED_PROBLEME,LOW);
+        LED_PROB_ON = false;
+    }
     temps_fin = millis();
     temps_attente_fin = temps_fin + temps_entree_affichage_fin;
 }
@@ -268,17 +314,19 @@ void affichage_pointage()
 
 void mode_pin_taupes()
 {
-    pinMode(Taupe_1_pin, OUTPUT);
+    /*pinMode(Taupe_1_pin, OUTPUT);
     pinMode(Taupe_2_pin, OUTPUT);
     pinMode(Taupe_3_pin, OUTPUT);
-    pinMode(Taupe_4_pin, OUTPUT);
+    pinMode(Taupe_4_pin, OUTPUT);*/
     pinMode(LED_PROBLEME, OUTPUT);
-    pinMode(outpin_switch_pause,OUTPUT);
-    pinMode(inpin_switch_pause,INPUT_PULLUP);
+    pinMode(outpin_switch_menu,OUTPUT);
+    pinMode(inpin_switch_menu,INPUT_PULLUP);
     pinMode(outpin_switch_choix_G,OUTPUT);
     pinMode(outpin_select_choix,OUTPUT);
     pinMode(inpin_switch_choix_G ,INPUT_PULLUP);
     pinMode(inpin_select_choix,INPUT_PULLUP);
+    pinMode(outpin_switch_start,OUTPUT);
+    pinMode(inpin_switch_start ,INPUT_PULLUP);
 }
 
 void mode_pin_switches_taupes()
@@ -300,6 +348,34 @@ int Random()
     return valeur_taupe;
 }
 
+void TempsVariable_taupes_robot()
+{
+    valeur_temps_choisi = random(1,5);
+}
+
+void Valeur_temps_choisi()
+{
+    TempsVariable_taupes_robot();
+    switch (valeur_temps_choisi)
+    {
+    case 1:
+        temps_dactivation = temps_taupes_robot_1;
+        break;
+    case 2:
+        temps_dactivation = temps_taupes_robot_1;
+        break;
+    case 3:
+        temps_dactivation = temps_taupes_robot_1;
+        break;
+    case 4:
+        temps_dactivation = temps_taupes_robot_1;
+        break;
+    case 5:
+        temps_dactivation = temps_taupes_robot_1;
+        break;
+    }
+}
+
 void ChangerTaupe(){
     taupe_choisie = Random();
     if (taupe_choisie == ancienne_taupe)
@@ -315,16 +391,16 @@ int GetTaupeOUTPin(int index){
     {
     default:
     case 0:
-        return Taupe_1_pin;
+        return ServoPinTaupe1;
         break;
     case 1:
-        return Taupe_2_pin;
+        return ServoPinTaupe2;
         break;
     case 2:
-        return Taupe_3_pin;
+        return ServoPinTaupe3;
         break;
     case 3:
-        return Taupe_4_pin;
+        return ServoPinTaupe4;
         break;
     }
 }
@@ -419,11 +495,11 @@ void identification_des_taupes_pour_boutons_coinces()
 
 void etat_ancienne_taupe()
 {
-    if (digitalRead(GetTaupeOUTPin(ancienne_taupe)) == LOW)
+    if (isTaupeRaised[ancienne_taupe] == LOW)
     {
         ancienne_taupe_up = false;
     }
-    else if (digitalRead(GetTaupeOUTPin(ancienne_taupe)) == HIGH)
+    else if (isTaupeRaised[ancienne_taupe] == HIGH)
     {
         ancienne_taupe_up = true;
     }
@@ -480,12 +556,13 @@ void taupe_Bouton_etat()
 
 
 bool Activation_UP_DOWN_taupes(){
+    Valeur_temps_choisi();
     if (!bouton_coince)
     {
         //Si la taupe est descendue, on entre dans le "if" et on monte la taupe, on part le timer.
         if (!taupe_up)
         {
-            digitalWrite(GetTaupeOUTPin(taupe_choisie), HIGH);
+            RaiseTaupe(taupe_choisie);
             taupe_up = true;
             temps_attente = temps_actuel + temps_dactivation;
         }
@@ -501,7 +578,7 @@ bool Activation_UP_DOWN_taupes(){
         if ((coup_sur_taupe) || (temps_actuel >= temps_attente)  )
         {
             /* On desactive la taupe choisie*/ 
-            digitalWrite(GetTaupeOUTPin(taupe_choisie), LOW);
+            LowerTaupe(taupe_choisie);
             temps_attente_de_verification = temps_actuel + temps_verification;
             /*on indique que la taupe n'est pas en position montee*/
             taupe_up = false;
@@ -589,7 +666,7 @@ void actionneur_taupes()
         }
         else if (bouton_coince)
         {
-            digitalWrite(GetTaupeOUTPin(taupe_choisie), LOW);
+            LowerTaupe(taupe_choisie);
             if (!LED_PROB_ON)
             {
                 Serial.print("\n\nbouton coincee!!!\n\n");
@@ -617,7 +694,7 @@ void actionneur_taupes()
         }
         else if (bouton_coince)
         {
-            digitalWrite(GetTaupeOUTPin(taupe_choisie), LOW);
+            LowerTaupe(taupe_choisie);
             if (!LED_PROB_ON)
             {
                 Serial.print("\n\nbouton coincee!!!\n\n");
@@ -636,7 +713,7 @@ void actionneur_taupes()
  * *****************************************************************************************************/
 void fin_de_partie()
 {
-    digitalWrite(GetTaupeOUTPin(taupe_choisie), LOW);
+    LowerTaupe(taupe_choisie);
     Fin_de_partie = true;
     start = false;
 }
@@ -678,7 +755,7 @@ void changement_de_joueur()
 }
 
 
-int b = 0;
+
 void pause_changement_jouer()
 {
     Serial.print("\nChangement de joueur, la partie reprend dans 30 secondes");
@@ -687,7 +764,7 @@ void pause_changement_jouer()
     //b++;
     
     //affichage_changement_joueur();
-    digitalWrite(GetTaupeOUTPin(taupe_choisie), LOW);
+    LowerTaupe(taupe_choisie);
     pause = true;
     //delay(30000);
     temps_actuel_durant_changement = millis();
@@ -714,12 +791,7 @@ void Fonction_pause() //inpin volee pour star switch. a refaire***
 }*/
 
 
-int choix=1;
-int choix_anterieur=0;
-bool select = false;
-bool menu = true;
-bool choix_bouton_released = true;
-bool choix_bouton_pressed = false;
+
 
 void choix_Bouton_etat()
 {
@@ -836,7 +908,7 @@ void retour_menu()
 }
 
 
-int k=1;
+
 void Menu() //a terminer
 {
     if (k==1)
@@ -853,7 +925,8 @@ void Menu() //a terminer
 
 void Reinitialisation_jeu()
 {
-    digitalWrite(GetTaupeOUTPin(taupe_choisie), LOW);
+    LowerTaupe(taupe_choisie);
+    isTaupeRaised[taupe_choisie]=false;
     ChangerTaupe();
     temps_anterieur = 0;
     //taupe_choisie = 0;
@@ -892,5 +965,20 @@ void Reinitialisation_jeu()
     i=0;
     participants.points_humain=0;
     participants.points_robot=0;
+
+    k=1;
+
+    choix=1;
+    choix_anterieur=0;
+    select = false;
+    menu = true;
+    choix_bouton_released = true;
+    choix_bouton_pressed = false;
+    b = 0;
+    if (LED_PROB_ON)
+    {
+        digitalWrite(LED_PROBLEME,LOW);
+        LED_PROB_ON = false;
+    }
 }
 
